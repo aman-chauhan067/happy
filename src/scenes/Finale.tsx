@@ -88,28 +88,31 @@ export default function Finale() {
           onNext={() => setStep("final-bhul-gaya")}
           nextText="NEXT →"
         >
-          <div className="relative w-full h-full flex flex-col justify-center items-center text-center px-4 md:px-12">
+          <div className="relative w-full h-full flex flex-col justify-center items-center text-center px-4 md:px-12 overflow-y-auto pt-16 pb-24">
             <motion.div 
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              className="z-10 flex flex-col items-center gap-4 max-w-4xl"
+              className="z-10 flex flex-col items-center gap-3 md:gap-4 max-w-4xl my-auto"
             >
-              <Pill text="Okay... Ab serious wali ek baat." bgColor="var(--color-sp-magenta)" textColor="var(--color-sp-white)" />
-              <h2 className="text-4xl md:text-5xl font-display font-bold leading-none uppercase tracking-tight text-sp-white mt-4">
+              <Pill text="Okay... Ab serious wali ek baat." bgColor="var(--color-sp-magenta)" textColor="var(--color-sp-white)" className="text-xs md:text-sm" />
+              
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-display font-bold leading-tight md:leading-none uppercase tracking-tight text-sp-white mt-2 md:mt-4">
                 Thank you. Delhi mein jis tarah support kiya aur generally bhi jab zarurat padti hai... uske liye genuinely thank you.
               </h2>
-              <h2 className="text-4xl md:text-5xl font-thin leading-none uppercase tracking-tight text-sp-green mt-8">
+              
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-thin leading-tight md:leading-none uppercase tracking-tight text-sp-green mt-4 md:mt-8">
                 Aap bhadwe ho. Isme koi doubt nahi hai.
               </h2>
-              <h2 className="text-4xl md:text-5xl font-display font-bold leading-none uppercase tracking-tight text-sp-white mt-4">
+              
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-display font-bold leading-tight md:leading-none uppercase tracking-tight text-sp-white mt-2 md:mt-4">
                 Par dil ke achhe ho. Ye bhi sach hai.
               </h2>
               
-              <div className="mt-8 flex flex-wrap justify-center gap-2">
-                <Pill text="Happy Birthday Himanshu Ji." bgColor="var(--color-sp-black)" textColor="var(--color-sp-white)" />
-                <Pill text="Khush raho." bgColor="var(--color-sp-orange)" textColor="var(--color-sp-black)" />
-                <Pill text="Bakchodi karte raho." bgColor="var(--color-sp-green)" textColor="var(--color-sp-black)" />
-                <Pill text="Bas thodi kam." bgColor="var(--color-sp-magenta)" textColor="var(--color-sp-white)" />
+              <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2">
+                <Pill text="Happy Birthday Himanshu Ji." bgColor="var(--color-sp-black)" textColor="var(--color-sp-white)" className="text-xs md:text-sm" />
+                <Pill text="Khush raho." bgColor="var(--color-sp-orange)" textColor="var(--color-sp-black)" className="text-xs md:text-sm" />
+                <Pill text="Bakchodi karte raho." bgColor="var(--color-sp-green)" textColor="var(--color-sp-black)" className="text-xs md:text-sm" />
+                <Pill text="Bas thodi kam." bgColor="var(--color-sp-magenta)" textColor="var(--color-sp-white)" className="text-xs md:text-sm" />
               </div>
             </motion.div>
           </div>
