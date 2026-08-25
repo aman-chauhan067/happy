@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mela-marigold: #FFB347;
+  --color-mela-red: #D32F2F;
+  --color-mela-night: #1A237E;
+  --color-mela-gold: #FFD700;
+  --color-mela-magenta: #E91E63;
+  --color-mela-orange: #FF5722;
+  --color-mela-purple: #4A148C;
+  --color-mela-cream: #FFF8E1;
+
+  --font-display: 'Caveat', cursive;
+  --font-sans: 'Caveat', cursive;
+}
+
+@layer base {
+  body {
+    @apply bg-mela-night text-mela-cream font-sans antialiased overflow-hidden m-0 p-0;
+  }
+}
+
+/* Custom Utilities for Mela Vibe */
+@layer utilities {
+  .neon-text-gold {
+    text-shadow: 0 0 5px #FFD700, 0 0 10px #FFD700, 0 0 20px #FFB347, 0 0 40px #FFB347;
+  }
+  
+  .neon-text-magenta {
+    text-shadow: 0 0 5px #E91E63, 0 0 10px #E91E63, 0 0 20px #E91E63;
+  }
+  
+  .neon-border-gold {
+    box-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700 inset;
+  }
+}
