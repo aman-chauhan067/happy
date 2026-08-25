@@ -1,84 +1,137 @@
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useExperienceState } from "../state/experienceState";
 import { birthdayStory } from "../story/storyContent";
-import melaNight from "../assets/mela_night.jpg";
+import { SpotifySlide } from "../components/SpotifySlide";
+import { StarShape, FlowerShape, Pill } from "../components/Shapes";
+
+// Helper to map color string to CSS variable
+const getColor = (theme: string) => {
+  switch(theme) {
+    case 'green': return 'var(--color-sp-green)';
+    case 'magenta': return 'var(--color-sp-magenta)';
+    case 'blue': return 'var(--color-sp-blue)';
+    case 'purple': return 'var(--color-sp-purple)';
+    case 'orange': return 'var(--color-sp-orange)';
+    case 'black': return 'var(--color-sp-black)';
+    default: return 'var(--color-sp-green)';
+  }
+};
+
+const getTextColor = (theme: string) => {
+  if (theme === 'black') return 'var(--color-sp-white)';
+  if (theme === 'blue' || theme === 'purple') return 'var(--color-sp-white)';
+  return 'var(--color-sp-black)';
+};
+
+// Component to mix thin and bold letters to create "chatak" vibe
+const MixedFontText = ({ text, textColor }: { text: string, textColor: string }) => {
+  const words = text.split(" ");
+  return (
+    <h2 className={`text-4xl md:text-6xl lg:text-7xl leading-none uppercase max-w-4xl tracking-tight`} style={{ color: textColor }}>
+      {words.map((word, i) => {
+        // Randomly make some words thin
+        const isThin = word.length > 5 && i % 3 === 0;
+        return (
+          <span key={i} className={isThin ? "font-thin tracking-normal" : "font-display font-bold"}>
+            {word}{" "}
+          </span>
+        );
+      })}
+    </h2>
+  );
+}
 
 export default function Story() {
   const { storyIndex, setStoryIndex, setScene } = useExperienceState();
-  const [lineIndex, setLineIndex] = useState(0);
 
   const currentSegment = birthdayStory[storyIndex];
-
-  // Auto-progress lines if they don't have a specific delay
-  useEffect(() => {
-    if (!currentSegment) return;
-    
-    // We only show ONE line at a time now.
-    // If the user hasn't clicked, we can auto-advance if we want, but tap-to-advance is safer.
-  }, [lineIndex, currentSegment]);
 
   if (!currentSegment) {
     setScene("reveal");
     return null;
   }
 
-  const handleProgress = () => {
-    if (lineIndex < currentSegment.lines.length - 1) {
-      setLineIndex((prev) => prev + 1);
+  const handleNext = () => {
+    if (storyIndex < birthdayStory.length - 1) {
+      setStoryIndex(storyIndex + 1);
     } else {
-      if (storyIndex < birthdayStory.length - 1) {
-        setStoryIndex(storyIndex + 1);
-        setLineIndex(0);
-      } else {
-        setScene("reveal");
-      }
+      setScene("reveal");
     }
   };
 
-  const currentLine = currentSegment.lines[lineIndex];
+  const bgColor = getColor(currentSegment.theme);
+  const textColor = getTextColor(currentSegment.theme);
+  const isDarkBg = currentSegment.theme === 'black' || currentSegment.theme === 'blue' || currentSegment.theme === 'purple';
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 1 } }}
-      onClick={handleProgress}
-      className="relative w-full h-screen flex flex-col items-center justify-center cursor-pointer overflow-hidden p-6"
-      style={{
-        backgroundImage: `url(${melaNight})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}
-    >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-all duration-1000"></div>
-
-      {/* Glassmorphism Container for Text */}
-      <div className="z-10 w-full max-w-4xl flex flex-col items-center justify-center h-full">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${storyIndex}-${lineIndex}`}
-            initial={{ opacity: 0, y: 15, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -15, filter: "blur(4px)", transition: { duration: 0.5 } }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="w-full text-center"
-          >
-            <p className="font-sans text-3xl md:text-5xl lg:text-6xl text-mela-cream tracking-wide leading-relaxed drop-shadow-xl font-medium">
-              {currentLine}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-        
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.5, 0] }}
-          transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-          className="absolute bottom-12 font-sans text-xs tracking-widest uppercase opacity-50 text-mela-gold"
+    <AnimatePresence mode="wait">
+      <motion.div key={currentSegment.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <SpotifySlide 
+          bgColor={bgColor}
+          slideNumber={storyIndex + 1}
+          totalSlides={birthdayStory.length + 1}
+          onNext={handleNext}
+          showCheckeredCorners={currentSegment.theme === 'green' || currentSegment.theme === 'orange'}
         >
-          Tap to continue
-        </motion.div>
-      </div>
-    </motion.div>
+          <div className="relative w-full h-full flex flex-col justify-center px-4 md:px-12">
+            
+            {/* Decorators */}
+            {currentSegment.theme === 'magenta' && (
+              <FlowerShape color="var(--color-sp-blue)" className="absolute right-10 top-1/4 w-24 h-24" />
+            )}
+            {currentSegment.theme === 'black' && (
+              <StarShape color="var(--color-sp-blue)" className="absolute right-20 top-1/3 w-20 h-20" />
+            )}
+            
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="z-10"
+            >
+              <MixedFontText text={currentSegment.title} textColor={textColor} />
+              
+              {currentSegment.subtitle && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-6"
+                >
+                  <span 
+                    className="inline-block px-4 py-2 font-display font-bold uppercase tracking-widest text-lg md:text-2xl"
+                    style={{ 
+                      backgroundColor: isDarkBg ? 'var(--color-sp-green)' : 'var(--color-sp-black)',
+                      color: isDarkBg ? 'var(--color-sp-black)' : 'var(--color-sp-white)'
+                    }}
+                  >
+                    {currentSegment.subtitle}
+                  </span>
+                </motion.div>
+              )}
+
+              {currentSegment.stickers && (
+                <div className="mt-8 flex flex-wrap gap-4 max-w-xl">
+                  {currentSegment.stickers.map((sticker, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ scale: 0, rotate: -20 }}
+                      animate={{ scale: 1, rotate: Math.random() * 10 - 5 }}
+                      transition={{ delay: 0.2 + (i * 0.1), type: "spring" }}
+                    >
+                      <Pill 
+                        text={sticker} 
+                        bgColor={i % 2 === 0 ? "var(--color-sp-green)" : "var(--color-sp-magenta)"} 
+                        textColor="var(--color-sp-black)"
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </SpotifySlide>
+      </motion.div>
+    </AnimatePresence>
   );
 }

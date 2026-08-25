@@ -1,27 +1,19 @@
-import { birthdayConfig } from "../config/birthdayConfig";
-
 export async function generatePhotoStrip(photos: string[]): Promise<string> {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
 
-  // Strip Dimensions
-  const padding = 40;
-  const photoWidth = 600;
-  const photoHeight = 450; // 4:3 ratio
-  const textSpace = 250;
+  // Strip Dimensions - Horizontal for Spotify Theme
+  const padding = 20;
+  const photoWidth = 400;
+  const photoHeight = 300; // 4:3 ratio
   
-  canvas.width = photoWidth + (padding * 2);
-  canvas.height = (photoHeight * 4) + (padding * 5) + textSpace;
+  canvas.width = (photoWidth * 4) + (padding * 5);
+  canvas.height = photoHeight + (padding * 2) + 100; // Extra 100px for text at bottom
 
-  // Background (Mela Red)
-  ctx.fillStyle = "#D32F2F";
+  // Background (White, like an old film strip)
+  ctx.fillStyle = "#FFFFFF";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Outer Gold Border
-  ctx.strokeStyle = "#FFD700";
-  ctx.lineWidth = 8;
-  ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
   // Helper to load image
   const loadImage = (src: string): Promise<HTMLImageElement> => {
@@ -37,31 +29,17 @@ export async function generatePhotoStrip(photos: string[]): Promise<string> {
   for (let i = 0; i < photos.length; i++) {
     try {
       const img = await loadImage(photos[i]);
-      const x = padding;
-      const y = padding + (i * (photoHeight + padding));
+      const x = padding + (i * (photoWidth + padding));
+      const y = padding;
       
-      const imgAspect = img.width / img.height;
-      const targetAspect = photoWidth / photoHeight;
-      
-      let sWidth = img.width;
-      let sHeight = img.height;
-      let sX = 0;
-      let sY = 0;
+      // Draw photo grayscale
+      ctx.filter = 'grayscale(100%)';
+      ctx.drawImage(img, x, y, photoWidth, photoHeight);
+      ctx.filter = 'none';
 
-      if (imgAspect > targetAspect) {
-        sWidth = img.height * targetAspect;
-        sX = (img.width - sWidth) / 2;
-      } else {
-        sHeight = img.width / targetAspect;
-        sY = (img.height - sHeight) / 2;
-      }
-
-      // Draw photo
-      ctx.drawImage(img, sX, sY, sWidth, sHeight, x, y, photoWidth, photoHeight);
-
-      // Bright Gold border around each photo
-      ctx.strokeStyle = "#FFD700";
-      ctx.lineWidth = 6;
+      // Inner border
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 4;
       ctx.strokeRect(x, y, photoWidth, photoHeight);
       
     } catch (e) {
@@ -69,22 +47,17 @@ export async function generatePhotoStrip(photos: string[]): Promise<string> {
     }
   }
 
-  // Draw Text
-  const textY = canvas.height - textSpace + padding;
-  
-  // Date
-  ctx.fillStyle = "#FFB347"; // Marigold
+  // Draw Text at bottom
+  ctx.fillStyle = "#000000";
   ctx.textAlign = "center";
-  ctx.font = "italic 32px Caveat, cursive";
-  ctx.fillText(new Date().toLocaleDateString(), canvas.width / 2, textY + 30);
+  ctx.font = "bold 32px Helvetica, sans-serif";
+  ctx.fillText("HIMANSHU JI × AMAN", canvas.width / 2, canvas.height - 60);
   
-  // Main Text
-  ctx.fillStyle = "#FFD700"; // Gold
-  ctx.font = "bold 56px Caveat, cursive";
-  const lines = birthdayConfig.photoStripMessage.split("\n");
-  lines.forEach((line, index) => {
-    ctx.fillText(line, canvas.width / 2, textY + 90 + (index * 50));
-  });
+  ctx.font = "bold 24px Helvetica, sans-serif";
+  ctx.fillText("HAPPY BIRTHDAY 2026", canvas.width / 2, canvas.height - 30);
+  
+  ctx.font = "italic 20px Helvetica, sans-serif";
+  ctx.fillText("finally ek photo toh hai", canvas.width / 2, canvas.height - 10);
 
-  return canvas.toDataURL("image/png");
+  return canvas.toDataURL("image/jpeg");
 }

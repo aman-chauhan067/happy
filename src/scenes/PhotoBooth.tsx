@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useExperienceState } from "../state/experienceState";
 import { photoBoothCaptions } from "../story/storyContent";
-import melaBooth from "../assets/mela_booth.jpg";
 
 export default function PhotoBooth() {
   const { setScene, capturedPhotos, setCapturedPhotos } = useExperienceState();
@@ -13,17 +12,12 @@ export default function PhotoBooth() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  
-  // Using a ref to track if sequence is running to prevent duplicate executions
   const isSequenceRunning = useRef(false);
 
   useEffect(() => {
-    return () => {
-      stopCamera();
-    };
+    return () => { stopCamera(); };
   }, []);
 
-  // Fix: Attach stream to video element once it mounts
   useEffect(() => {
     if (isActive && videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current;
@@ -32,13 +26,8 @@ export default function PhotoBooth() {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "user" },
-        audio: false 
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
       streamRef.current = stream;
-      // We don't attach to videoRef here because it might not be mounted yet.
-      // The useEffect above will handle it.
       setIsActive(true);
       setCameraError(false);
     } catch (err) {
@@ -66,19 +55,16 @@ export default function PhotoBooth() {
       if (context) {
         canvasRef.current.width = 600;
         canvasRef.current.height = 450;
-        
         if (videoRef.current && streamRef.current) {
           context.drawImage(videoRef.current, 0, 0, 600, 450);
         } else {
-          // Fallback: draw a colorful placeholder
-          context.fillStyle = `hsl(${Math.random() * 360}, 70%, 50%)`;
+          context.fillStyle = `hsl(${Math.random() * 360}, 100%, 50%)`;
           context.fillRect(0, 0, 600, 450);
-          context.fillStyle = "white";
+          context.fillStyle = "black";
           context.font = "bold 40px sans-serif";
           context.textAlign = "center";
-          context.fillText("No Camera 📸", 300, 225);
+          context.fillText("No Camera", 300, 225);
         }
-        
         return canvasRef.current.toDataURL('image/jpeg');
       }
     }
@@ -92,155 +78,127 @@ export default function PhotoBooth() {
     const photos: string[] = [];
     
     for (let i = 0; i < 4; i++) {
-      // Countdown
       for (let c = 3; c > 0; c--) {
         setCountdown(c);
         await new Promise(r => setTimeout(r, 1000));
       }
-      setCountdown(0); // Snap!
-      
+      setCountdown(0);
       const photo = capturePhoto();
       if (photo) {
         photos.push(photo);
-        // Force update global state here inside loop so UI can react if needed
         setCapturedPhotos([...photos]); 
       }
-      
       await new Promise(r => setTimeout(r, 500));
       setCountdown(null);
       await new Promise(r => setTimeout(r, 1000));
     }
-    
     stopCamera();
     isSequenceRunning.current = false;
     setScene("result");
   };
 
-  const currentCaption = countdown !== null && capturedPhotos.length < photoBoothCaptions.length 
-    ? photoBoothCaptions[capturedPhotos.length] 
-    : "";
+  // Background colors cycle based on which photo we are on
+  const bgColors = ['var(--color-sp-purple)', 'var(--color-sp-green)', 'var(--color-sp-magenta)', 'var(--color-sp-blue)', 'var(--color-sp-orange)'];
+  const currentBg = isActive ? bgColors[capturedPhotos.length] : 'var(--color-sp-black)';
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="relative w-full h-screen flex flex-col items-center justify-center p-4 bg-mela-night overflow-hidden"
-      style={{
-        backgroundImage: `url(${melaBooth})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}
+      className="relative w-full h-screen flex flex-col items-center justify-center p-4 transition-colors duration-500 overflow-hidden"
+      style={{ backgroundColor: currentBg }}
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+      <div className="absolute inset-0 bg-checkered opacity-30 mix-blend-overlay"></div>
 
-      <div className="z-10 w-full max-w-lg flex flex-col items-center">
-        
-        {/* Main Interface */}
+      <div className="z-10 w-full max-w-2xl flex flex-col items-center">
         {!isActive ? (
           <motion.div 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="w-full bg-black/60 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl flex flex-col items-center text-center"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="flex flex-col items-center text-center"
           >
-            <h2 className="text-2xl md:text-3xl font-display text-mela-gold mb-4">
-              {cameraError ? "Arre, camera permission denied?" : "Aaj ke baad kam se kam ek photo toh honi chahiye."}
-            </h2>
-            <p className="text-lg font-sans text-mela-cream/90 mb-10">
-              {cameraError 
-                ? "Koi baat nahi, bina camera ke hi photo click kar lete hain. Imagination is everything." 
-                : "Aur kyunki ye aapka birthday hai... camera bhi aap hi handle karoge."}
-            </p>
+            <h1 className="text-6xl md:text-8xl font-thin text-sp-white text-outline uppercase leading-none mb-4 tracking-tighter">
+              PHOTO<br/>
+              <span className="font-display font-bold">BOOTH</span>
+            </h1>
             
+            <div className="bg-sp-orange text-sp-black font-display font-bold px-6 py-2 -rotate-3 mb-2 shadow-[4px_4px_0_#000] border-2 border-sp-black uppercase">
+              AB EK PHOTO TOH HONI CHAHIYE.
+            </div>
+            <div className="flex gap-2 mb-2">
+              <div className="bg-sp-magenta text-sp-white font-display font-bold px-4 py-1 rotate-2 shadow-[4px_4px_0_#000] border-2 border-sp-black uppercase">AAPKI.</div>
+              <div className="bg-sp-blue text-sp-white font-display font-bold px-4 py-1 -rotate-2 shadow-[4px_4px_0_#000] border-2 border-sp-black uppercase">MERI BHI.</div>
+            </div>
+            <div className="bg-sp-green text-sp-black font-thin px-4 py-1 mb-12 shadow-[4px_4px_0_#000] border-2 border-sp-black uppercase text-xl">
+              aur preferably dono ki izzat bach jaye.
+            </div>
+
             {cameraError ? (
-              <button
-                onClick={startFakeCamera}
-                className="px-8 py-4 bg-mela-red text-white font-sans font-bold tracking-widest uppercase rounded-lg shadow-[0_0_20px_#D32F2F] hover:bg-mela-orange transition-all border border-white/20"
-              >
-                Continue Anyway
+              <button onClick={startFakeCamera} className="bg-sp-green text-sp-black font-bold uppercase tracking-widest px-8 py-4 rounded-full border-2 border-black hover:scale-105 transition-transform shadow-[4px_4px_0_#000]">
+                CONTINUE WITHOUT CAMERA
               </button>
             ) : (
-              <button
-                onClick={startCamera}
-                className="px-8 py-4 bg-mela-red text-white font-sans font-bold tracking-widest uppercase rounded-lg shadow-[0_0_20px_#D32F2F] hover:bg-mela-orange transition-all border border-white/20"
-              >
-                Enable Camera
+              <button onClick={startCamera} className="bg-sp-green text-sp-black font-bold uppercase tracking-widest px-8 py-4 rounded-full border-2 border-black hover:scale-105 transition-transform shadow-[4px_4px_0_#000]">
+                OPEN BOOTH →
               </button>
             )}
           </motion.div>
         ) : (
-          <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-black/80 shadow-[0_0_40px_#FFD700] border-4 border-mela-gold">
-            {streamRef.current ? (
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className={`w-full h-full object-cover ${countdown === 0 ? 'brightness-200' : ''} transition-all duration-100 scale-x-[-1]`}
-              />
-            ) : (
-              <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-mela-red to-mela-orange ${countdown === 0 ? 'brightness-200' : ''} transition-all duration-100`}>
-                <p className="text-white text-2xl font-display font-bold">Imagination Camera 📸</p>
-              </div>
-            )}
+          <div className="flex flex-col items-center w-full relative">
             
-            <AnimatePresence>
-              {countdown !== null && (
-                <>
-                  <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute top-6 left-0 w-full text-center z-20"
-                  >
-                    <p className="font-display text-3xl md:text-4xl text-mela-cream drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] px-4 bg-black/40 inline-block py-2 rounded-full backdrop-blur-md">
-                      {currentCaption}
-                    </p>
-                  </motion.div>
-                  
-                  {countdown > 0 && (
-                    <motion.div
-                      key={countdown}
-                      initial={{ scale: 2, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      className="absolute inset-0 flex items-center justify-center z-10"
-                    >
-                      <span className="text-[120px] font-sans font-black text-white drop-shadow-[0_0_20px_#E91E63]">{countdown}</span>
-                    </motion.div>
-                  )}
-                </>
-              )}
-            </AnimatePresence>
+            {/* Top Bar Navigation */}
+            <div className="absolute -top-16 left-0 right-0 flex justify-between items-center w-full px-4 text-sp-black font-bold tracking-widest uppercase">
+               <span>&lt; BACK</span>
+               <span>{capturedPhotos.length + 1} / 4</span>
+            </div>
 
-            {!isSequenceRunning.current && (
-              <div className="absolute bottom-6 left-0 w-full flex justify-center z-20">
-                <button
-                  onClick={runPhotoSequence}
-                  className="w-16 h-16 rounded-full bg-white border-4 border-mela-red hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center group"
-                >
-                  <div className="w-12 h-12 rounded-full border-2 border-mela-red group-hover:bg-mela-red transition-colors" />
-                </button>
-              </div>
-            )}
+            <div className="relative w-full aspect-[4/3] max-w-lg bg-sp-black border-4 border-sp-black shadow-[10px_10px_0_#000] overflow-hidden">
+              {streamRef.current ? (
+                <video ref={videoRef} autoPlay playsInline muted className={`w-full h-full object-cover ${countdown === 0 ? 'brightness-200 grayscale' : 'grayscale'} transition-all duration-100 scale-x-[-1]`} />
+              ) : (
+                <div className={`w-full h-full flex items-center justify-center bg-checkered ${countdown === 0 ? 'brightness-200' : ''}`}>
+                  <p className="text-sp-white text-3xl font-display font-bold bg-sp-black px-4 py-2">NO CAMERA DETECTED</p>
+                </div>
+              )}
+              
+              <AnimatePresence>
+                {countdown !== null && (
+                  <>
+                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute top-6 left-0 w-full text-center z-20">
+                      <p className="font-display text-2xl font-bold uppercase text-sp-black bg-sp-white inline-block px-4 py-1 border-2 border-sp-black shadow-[4px_4px_0_#000] -rotate-2">
+                        {photoBoothCaptions[capturedPhotos.length] || ""}
+                      </p>
+                    </motion.div>
+                    
+                    {countdown > 0 && (
+                      <motion.div key={countdown} initial={{ scale: 1.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} className="absolute inset-0 flex items-center justify-center z-10">
+                        <span className="text-[150px] font-thin text-sp-white text-outline">{countdown}</span>
+                      </motion.div>
+                    )}
+                    {countdown === 0 && (
+                      <motion.div key="snap" initial={{ scale: 1.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex items-center justify-center z-10">
+                         <div className="bg-sp-white text-sp-black font-bold text-5xl px-8 py-4 rotate-12 border-4 border-sp-black shadow-[8px_8px_0_#FF1493]">CLICK!</div>
+                      </motion.div>
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Shutter Button area */}
+            <div className="w-full max-w-lg bg-sp-black h-20 flex items-center justify-between px-6 border-x-4 border-b-4 border-sp-black shadow-[10px_10px_0_#000]">
+               <div className="w-8 h-8 opacity-50">⚡</div>
+               {!isSequenceRunning.current && (
+                 <button onClick={runPhotoSequence} className="w-12 h-12 rounded-full border-4 border-sp-orange bg-transparent flex items-center justify-center hover:scale-110 transition-transform">
+                   <div className="w-8 h-8 rounded-full bg-sp-orange" />
+                 </button>
+               )}
+               <div className="w-8 h-8 opacity-50 text-white flex items-center justify-center font-bold">C</div>
+            </div>
           </div>
         )}
-
-        {/* Progress Dots */}
-        <div className="flex gap-3 mt-8">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className={`w-4 h-4 rounded-full border-2 transition-all duration-500 ${
-                i < capturedPhotos.length 
-                  ? "bg-mela-gold border-mela-gold shadow-[0_0_10px_#FFD700]" 
-                  : "bg-transparent border-white/30"
-              }`}
-            />
-          ))}
-        </div>
       </div>
-
       <canvas ref={canvasRef} className="hidden" />
     </motion.div>
   );
