@@ -75,12 +75,12 @@ export async function generatePhotoStrip(photos: string[]): Promise<string> {
   // Date
   ctx.fillStyle = "#FFB347"; // Marigold
   ctx.textAlign = "center";
-  ctx.font = "italic 24px Inter, sans-serif";
+  ctx.font = "italic 32px Caveat, cursive";
   ctx.fillText(new Date().toLocaleDateString(), canvas.width / 2, textY + 30);
   
   // Main Text
   ctx.fillStyle = "#FFD700"; // Gold
-  ctx.font = "bold 44px Inter, sans-serif";
+  ctx.font = "bold 56px Caveat, cursive";
   const lines = birthdayConfig.photoStripMessage.split("\n");
   lines.forEach((line, index) => {
     ctx.fillText(line, canvas.width / 2, textY + 90 + (index * 50));

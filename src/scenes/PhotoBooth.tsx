@@ -23,6 +23,13 @@ export default function PhotoBooth() {
     };
   }, []);
 
+  // Fix: Attach stream to video element once it mounts
+  useEffect(() => {
+    if (isActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isActive]);
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -30,9 +37,8 @@ export default function PhotoBooth() {
         audio: false 
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+      // We don't attach to videoRef here because it might not be mounted yet.
+      // The useEffect above will handle it.
       setIsActive(true);
       setCameraError(false);
     } catch (err) {
